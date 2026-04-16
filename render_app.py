@@ -20,8 +20,10 @@ def get_model():
         with open(MODEL_CACHE, "rb") as f:
             return pickle.load(f)
 
-    # Load sample data for training
-    df = pd.read_csv("sample_reviews.csv")
+    df = pd.read_csv(csv_path)
+    csv_path = "sample_reviews.csv"
+    if not os.path.exists(csv_path):
+        raise FileNotFoundError(f"Cannot find {csv_path}. Files present: {os.listdir('.')}")
     df.dropna(subset=['UserId', 'ProductId', 'Text', 'Score', 'sentiment'], inplace=True)
 
     # Customer features
@@ -50,13 +52,21 @@ def get_model():
         pickle.dump(pipeline, f)
     return pipeline
 
-model = get_model()
+try:
+    model = get_model()
+except Exception as e:
+    model = None
+    model_error = str(e)
+else:
+    model_error = None
 
 # ── Routes ────────────────────────────────────────────────────────────────────
 @app.route("/", methods=["GET", "POST"])
 def index():
     result = None
     error  = None
+    if model is None:
+        return f"Model load error: {model_error}", 500
 
     if request.method == "POST":
         try:
