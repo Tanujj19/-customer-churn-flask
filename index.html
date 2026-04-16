@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Customer Churn Predictor</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        h1 { font-size: 1.5rem; margin-bottom: 6px; color: #1a1a2e; }
+        p.subtitle { color: #666; font-size: 0.9rem; margin-bottom: 28px; }
+        label { display: block; font-size: 0.85rem; font-weight: 600; color: #333; margin-bottom: 4px; }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            margin-bottom: 18px;
+            transition: border 0.2s;
+        }
+        input[type="number"]:focus { outline: none; border-color: #4f8ef7; }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #4f8ef7;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover { background: #3a7de0; }
+        .result {
+            margin-top: 24px;
+            padding: 16px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .result.high { background: #fff3cd; border-left: 4px solid #f0ad4e; color: #856404; }
+        .result.low  { background: #d4edda; border-left: 4px solid #28a745; color: #155724; }
+        .result .prob { font-size: 0.85rem; font-weight: 400; margin-top: 4px; color: inherit; }
+        .error {
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            border-radius: 8px;
+            color: #721c24;
+            font-size: 0.9rem;
+        }
+        small { color: #999; font-size: 0.78rem; display: block; margin-top: -14px; margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🧠 Customer Churn Predictor</h1>
+        <p class="subtitle">Enter customer features to predict churn risk.</p>
+
+        <form method="POST">
+            <label for="avg_rating">Average Rating</label>
+            <input type="number" id="avg_rating" name="avg_rating"
+                   step="0.01" min="1" max="5" placeholder="e.g. 4.2"
+                   value="{{ request.form.get('avg_rating', '') }}" required />
+            <small>Range: 1.0 – 5.0</small>
+
+            <label for="purchase_count">Purchase Count</label>
+            <input type="number" id="purchase_count" name="purchase_count"
+                   step="1" min="0" placeholder="e.g. 3"
+                   value="{{ request.form.get('purchase_count', '') }}" required />
+            <small>Total number of reviews/purchases</small>
+
+            <label for="avg_sentiment">Average Sentiment Score</label>
+            <input type="number" id="avg_sentiment" name="avg_sentiment"
+                   step="0.001" min="-1" max="1" placeholder="e.g. 0.35"
+                   value="{{ request.form.get('avg_sentiment', '') }}" required />
+            <small>Range: -1.0 (negative) to 1.0 (positive)</small>
+
+            <button type="submit">Predict Churn</button>
+        </form>
+
+        {% if error %}
+        <div class="error">❌ {{ error }}</div>
+        {% endif %}
+
+        {% if result %}
+        <div class="result {{ 'high' if result.risk == 1 else 'low' }}">
+            {{ result.prediction }}
+            <div class="prob">Churn Probability: {{ result.probability }}</div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
